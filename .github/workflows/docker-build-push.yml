@@ -35,19 +35,22 @@ jobs:
         run: yarn install --immutable
 
       - name: Compile Hardhat contracts
-        run: yarn workspace @scaffold/hardhat compile
+        run: yarn workspace hardhat compile
 
       - name: Run Hardhat tests
-        run: yarn workspace @scaffold/hardhat test
+        run: yarn workspace hardhat test
 
       - name: Lint Hardhat
-        run: yarn workspace @scaffold/hardhat lint --max-warnings=0
+        run: yarn workspace hardhat lint --max-warnings=0
+
+      - name: Build Next.js
+        run: yarn workspace nextjs build
 
       - name: Lint Next.js
-        run: yarn workspace @scaffold/nextjs next:lint --max-warnings=0
+        run: yarn workspace nextjs lint --max-warnings=0
 
       - name: Type-check Next.js
-        run: yarn workspace @scaffold/nextjs next:check-types
+        run: yarn workspace nextjs type-check
 
   # -----------------------------
   # 2) Build & push Docker image
@@ -60,7 +63,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (for multi-stage Docker build)
+      - name: Setup Node.js (for production install)
         uses: actions/setup-node@v3
         with:
           node-version: '18'
@@ -75,7 +78,7 @@ jobs:
             .yarn/build-state.yml
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Install prod deps only
+      - name: Install production dependencies only
         run: yarn install --immutable --production
 
       - name: Login to Docker Hub
