@@ -26,14 +26,19 @@ jobs:
         run: yarn install --immutable
 
       - name: Compile contracts
+        working-directory: packages/hardhat
+        run: npx hardhat compile
+
+      - name: Start Hardhat node
+        working-directory: packages/hardhat
         run: |
-          cd packages/hardhat
-          npx hardhat compile
+          npx hardhat node --hostname localhost --port 8545 &
+          # Attendre 5 s que le node soit prêt
+          sleep 5
 
       - name: Run Hardhat tests
-        run: |
-          cd packages/hardhat
-          npx hardhat test
+        working-directory: packages/hardhat
+        run: npx hardhat test --network localhost
 
       - name: Lint Next.js
         run: yarn next:lint --max-warnings=0
@@ -42,9 +47,8 @@ jobs:
         run: yarn next:check-types
 
       - name: Lint Hardhat
-        run: |
-          cd packages/hardhat
-          yarn hardhat:lint --max-warnings=0
+        working-directory: packages/hardhat
+        run: yarn hardhat:lint --max-warnings=0
 
   # -----------------------------
   # 2) Build & push Docker image
