@@ -1,15 +1,9 @@
-# ignore tout par défaut
+# on ignore tout le repo…
 **
 
-# sauf ces fichiers racine / workspace nextjs
+# …sauf :
+!nextjs/**
 !package.json
 !yarn.lock
 !.yarnrc.yml
 !.yarn/**
-
-# on embarque uniquement Next.js
-!nextjs
-!nextjs/**
-
-# (optionnel) public si vous l'utilisez
-!public
