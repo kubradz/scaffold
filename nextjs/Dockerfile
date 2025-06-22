@@ -1,27 +1,38 @@
-# Étape 1 : deps
+# --- 1) Installation des dépendances (Yarn Berry / v3) ---
 FROM node:18-alpine AS deps
 WORKDIR /app
 
-COPY nextjs/package.json nextjs/yarn.lock ./
-RUN yarn install --frozen-lockfile --production
+# On copie le manifest root et le dossier .yarn
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
 
-# Étape 2 : builder
+# On installe en mode prod
+RUN yarn install --immutable --production
+
+# --- 2) Build de l’app NextJS ---
 FROM deps AS builder
-WORKDIR /app
+WORKDIR /app/nextjs
 
-COPY nextjs ./
+# On copie tout le code NextJS
+COPY nextjs/ ./
+
+# On build
 RUN yarn build
 
-# Étape 3 : runtime
+# --- 3) Image de production ---
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-COPY --from=builder /app/.next     ./.next
-COPY --from=builder /app/public     ./public
-COPY --from=deps    /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+ENV NODE_ENV=production
+
+# On récupère le résultat du build
+COPY --from=builder /app/nextjs/.next       ./.next
+COPY --from=builder /app/nextjs/public      ./public
+COPY --from=builder /app/nextjs/package.json ./package.json
+
+# On récupère les node_modules déjà installés
+COPY --from=deps /app/node_modules ./node_modules
 
 EXPOSE 3000
-ENV NODE_ENV=production
 
 CMD ["yarn","start"]
