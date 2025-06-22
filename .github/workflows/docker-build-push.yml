@@ -6,7 +6,7 @@ on:
 
 jobs:
   ci:
-    name: 🛠 CI Tests & Build
+    name: "🛠 CI Tests & Build"
     runs-on: ubuntu-latest
 
     steps:
@@ -26,11 +26,11 @@ jobs:
           yarn workspace @se-2/hardhat compile
           yarn workspace @se-2/hardhat test
 
-      - name: Build Next.js
+      - name: Build Next.js (vérif)
         run: yarn workspace @se-2/nextjs build
 
   docker:
-    name: 🐳 Build & Push Docker Image
+    name: "🐳 Build & Push Docker Image"
     needs: ci
     runs-on: ubuntu-latest
 
