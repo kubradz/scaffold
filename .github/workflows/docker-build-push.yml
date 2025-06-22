@@ -1,21 +1,15 @@
-# .github/workflows/ci-and-docker-publish.yml
 name: CI & Docker Publish
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  # -----------------------------
-  # 1) Compilation / tests / lint
-  # -----------------------------
   ci:
     name: 🔍 CI Tests & Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -27,27 +21,20 @@ jobs:
 
       - name: Run Hardhat & Next.js build/test
         run: |
-          # Démarre Hardhat en-local, déploie les contrats et génère les typings
-          yarn chain
+          yarn chain &
+          sleep 5
           yarn deploy
-
-          # Next.js : lint et typage
+          kill $(jobs -p) || true
           yarn next:lint --max-warnings=0
           yarn next:check-types
-
-          # Hardhat : lint
           yarn hardhat:lint --max-warnings=0
 
-  # -----------------------------
-  # 2) Build & push Docker image
-  # -----------------------------
   docker:
     name: 🐳 Build & Push Docker Image
     needs: ci
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -58,6 +45,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .                     # ton Dockerfile à la racine
+          context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
