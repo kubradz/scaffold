@@ -1,3 +1,4 @@
+# .github/workflows/ci-and-docker-publish.yml
 name: CI & Docker Publish
 
 on:
@@ -10,47 +11,32 @@ jobs:
   # 1) Compilation / tests / lint
   # -----------------------------
   ci:
-    name: 🔍 CI Tests & Deploy
+    name: 🔍 CI Tests & Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Yarn cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            .yarn/cache
-            .yarn/unplugged
-            .yarn/build-state.yml
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Compile Hardhat contracts
-        run: yarn workspace hardhat compile
+      - name: Run Hardhat & Next.js build/test
+        run: |
+          # Démarre Hardhat en-local, déploie les contrats et génère les typings
+          yarn chain
+          yarn deploy
 
-      - name: Run Hardhat tests
-        run: yarn workspace hardhat test
+          # Next.js : lint et typage
+          yarn next:lint --max-warnings=0
+          yarn next:check-types
 
-      - name: Lint Hardhat
-        run: yarn workspace hardhat lint --max-warnings=0
-
-      - name: Build Next.js
-        run: yarn workspace nextjs build
-
-      - name: Lint Next.js
-        run: yarn workspace nextjs lint --max-warnings=0
-
-      - name: Type-check Next.js
-        run: yarn workspace nextjs type-check
+          # Hardhat : lint
+          yarn hardhat:lint --max-warnings=0
 
   # -----------------------------
   # 2) Build & push Docker image
@@ -63,24 +49,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (for production install)
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'yarn'
-
-      - name: Cache Yarn cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            .yarn/cache
-            .yarn/unplugged
-            .yarn/build-state.yml
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install production dependencies only
-        run: yarn install --immutable --production
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -90,6 +58,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: .                     # ton Dockerfile à la racine
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
