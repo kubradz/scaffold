@@ -22,19 +22,18 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install root dependencies
+      - name: Install all dependencies
         run: yarn install --immutable
 
-      - name: Deploy contracts on Hardhat network
+      - name: Compile contracts
         run: |
           cd packages/hardhat
-          yarn install --immutable
-          npx hardhat run scripts/runHardhatDeployWithPK.ts --network hardhat
+          npx hardhat compile
 
       - name: Run Hardhat tests
         run: |
           cd packages/hardhat
-          npx hardhat test --network hardhat
+          npx hardhat test
 
       - name: Lint Next.js
         run: yarn next:lint --max-warnings=0
@@ -64,7 +63,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install root dependencies
+      - name: Install all dependencies
         run: yarn install --immutable
 
       - name: Login to Docker Hub
