@@ -7,7 +7,7 @@ on:
 
 jobs:
   ci:
-    name: CI Tests & Build
+    name: 🔍 CI Tests & Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,14 +20,21 @@ jobs:
 
       - name: Install deps & run tests
         run: |
+          # Racine → installe tout (hardhat + nextjs)
           yarn install --immutable
+          # Build + tests NextJS
+          cd nextjs
+          yarn build
+          cd ..
+          # Démarrage en fond + deploy Hardhat
           yarn chain & sleep 5 && yarn deploy && kill $(jobs -p) || true
+          # Lint & types
           yarn next:lint --max-warnings=0
           yarn next:check-types
           yarn hardhat:lint --max-warnings=0
 
   docker:
-    name: Build & Push Docker Image
+    name: 🐳 Build & Push Docker Image
     needs: ci
     runs-on: ubuntu-latest
     steps:
@@ -43,7 +50,7 @@ jobs:
       - name: Build & push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .                     # tout le repo
-          file: nextjs/Dockerfile       # chemin précis
+          context: .
+          file: nextjs/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
