@@ -1,15 +1,18 @@
-# On ignore tout d'abord tout
+# ignore tout par défaut
 **
 
-# Sauf le dossier nextjs (où se trouve votre application)
+# sauf ces fichiers racine
+!package.json
+!yarn.lock
+!.yarnrc.yml
+
+# et tout le dossier .yarn (plugins, cache…)
+!.yarn
+!.yarn/**
+
+# on n’a besoin que du workspace nextjs
 !nextjs
 !nextjs/**
 
-# Puis Yarn Berry
-!.yarn
-!.yarn/**
-!.yarnrc.yml
-
-# Ne pas oublier le package.json et yarn.lock à la racine
-!package.json
-!yarn.lock
+# (optionnel) si vous avez assets à la racine
+!public
