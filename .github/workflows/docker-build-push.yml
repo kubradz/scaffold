@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: Install all deps
         run: yarn install --immutable
 
       - name: Compile & Test Hardhat
@@ -27,7 +27,7 @@ jobs:
           yarn workspace @se-2/hardhat test
 
       - name: Build Next.js
-        run: yarn workspace nextjs build
+        run: yarn workspace @se-2/nextjs build
 
   docker:
     name: 🐳 Build & Push Docker Image
