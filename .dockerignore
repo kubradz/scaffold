@@ -1,9 +1,12 @@
-# on ignore tout le repo…
-**
+# ignore tout par défaut
+*
 
-# …sauf :
-!nextjs/**
+# mais pas ces fichiers/dossiers :
+!Dockerfile
 !package.json
 !yarn.lock
 !.yarnrc.yml
-!.yarn/**
+!.yarn/
+
+!nextjs/
+!nextjs/**
