@@ -1,28 +1,32 @@
-# .github/workflows/docker-build-push.yml
 name: CI & Docker Publish
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   ci:
     name: CI Tests & Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18'
 
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Run Hardhat & Next.js build/test
+      - name: Install dependencies & tests
         run: |
-          yarn chain & sleep 5 && yarn deploy && kill $(jobs -p) || true
+          yarn install --immutable
+          # Hardhat en arrière-plan pour le déploy
+          yarn chain &
+          sleep 5
+          yarn deploy
+          kill $(jobs -p) || true
+          # linters & types
           yarn next:lint --max-warnings=0
           yarn next:check-types
           yarn hardhat:lint --max-warnings=0
@@ -32,7 +36,8 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -43,7 +48,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: .                       # tout le repo, pour que nextjs/ soit visible
+          file: nextjs/Dockerfile         # chemin vers le Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
