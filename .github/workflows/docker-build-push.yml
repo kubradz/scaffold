@@ -29,16 +29,9 @@ jobs:
         working-directory: packages/hardhat
         run: npx hardhat compile
 
-      - name: Start Hardhat node
-        working-directory: packages/hardhat
-        run: |
-          npx hardhat node --hostname localhost --port 8545 &
-          # Attendre 5 s que le node soit prêt
-          sleep 5
-
       - name: Run Hardhat tests
         working-directory: packages/hardhat
-        run: npx hardhat test --network localhost
+        run: npx hardhat test
 
       - name: Lint Next.js
         run: yarn next:lint --max-warnings=0
