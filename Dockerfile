@@ -1,15 +1,18 @@
+# Dockerfile (à la racine du repo)
 FROM node:18-alpine
+
 WORKDIR /app
 
-# 1. Installe les dépendances du front
-COPY packages/react-app/package*.json ./packages/react-app/
-RUN cd packages/react-app && npm install
+# 1. Copie uniquement les package.json (pour profiter du cache Docker)
+COPY nextjs/package*.json ./
 
-# 2. Copie et build le front
-COPY packages/react-app ./packages/react-app
-RUN cd packages/react-app && npm run build
+# Installe les dépendances
+RUN npm install
+
+# 2. Copie tout le code du front et build
+COPY nextjs ./
+RUN npm run build
 
 # 3. Expose et lance le front
-WORKDIR /app/packages/react-app
 EXPOSE 3000
-CMD ["npm","start"]
+CMD ["npm", "start"]
