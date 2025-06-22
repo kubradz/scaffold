@@ -1,3 +1,4 @@
+# .github/workflows/docker-build-push.yml
 name: CI & Docker Publish
 
 on:
@@ -14,20 +15,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
       - name: Install dependencies
         run: yarn install --immutable
 
       - name: Run Hardhat & Next.js build/test
         run: |
-          # lance Hardhat en tâche de fond pour deploy
-          yarn chain &
-          sleep 5
-          yarn deploy
-          kill $(jobs -p) || true
-
-          # linters & types
+          yarn chain & sleep 5 && yarn deploy && kill $(jobs -p) || true
           yarn next:lint --max-warnings=0
           yarn next:check-types
           yarn hardhat:lint --max-warnings=0
@@ -48,7 +43,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .              # on prend tout le repo
-          file: ./Dockerfile      # Dockerfile à la racine
+          context: .
+          file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
