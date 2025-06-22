@@ -5,6 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
+  # 1) Compilation / tests / lint
   ci:
     name: 🔍 CI Tests & Build
     runs-on: ubuntu-latest
@@ -21,14 +22,20 @@ jobs:
 
       - name: Run Hardhat & Next.js build/test
         run: |
+          # Start local Hardhat node en arrière-plan
           yarn chain &
           sleep 5
+          # Déploiement sur ce node
           yarn deploy
+          # Stoppe le node
           kill $(jobs -p) || true
+          # Lint & typage front
           yarn next:lint --max-warnings=0
           yarn next:check-types
+          # Lint Hardhat
           yarn hardhat:lint --max-warnings=0
 
+  # 2) Build & push Docker image
   docker:
     name: 🐳 Build & Push Docker Image
     needs: ci
@@ -45,6 +52,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./nextjs                    # <-- point to your Next.js app
+          file: ./nextjs/Dockerfile           # <-- Dockerfile inside nextjs/
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
