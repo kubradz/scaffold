@@ -18,15 +18,10 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies & tests
+      - name: Install deps & run tests
         run: |
           yarn install --immutable
-          # Hardhat en arrière-plan pour le déploy
-          yarn chain &
-          sleep 5
-          yarn deploy
-          kill $(jobs -p) || true
-          # linters & types
+          yarn chain & sleep 5 && yarn deploy && kill $(jobs -p) || true
           yarn next:lint --max-warnings=0
           yarn next:check-types
           yarn hardhat:lint --max-warnings=0
@@ -45,10 +40,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build & push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .                       # tout le repo, pour que nextjs/ soit visible
-          file: nextjs/Dockerfile         # chemin vers le Dockerfile
+          context: .                     # tout le repo
+          file: nextjs/Dockerfile       # chemin précis
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
