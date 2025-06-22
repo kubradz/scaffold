@@ -1,18 +1,15 @@
 # ignore tout par défaut
 **
 
-# sauf ces fichiers racine
+# sauf ces fichiers racine / workspace nextjs
 !package.json
 !yarn.lock
 !.yarnrc.yml
-
-# et tout le dossier .yarn (plugins, cache…)
-!.yarn
 !.yarn/**
 
-# on n’a besoin que du workspace nextjs
+# on embarque uniquement Next.js
 !nextjs
 !nextjs/**
 
-# (optionnel) si vous avez assets à la racine
+# (optionnel) public si vous l'utilisez
 !public
