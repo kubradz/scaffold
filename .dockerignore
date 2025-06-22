@@ -1,0 +1,15 @@
+# On ignore tout d'abord tout
+**
+
+# Sauf le dossier nextjs (où se trouve votre application)
+!nextjs
+!nextjs/**
+
+# Puis Yarn Berry
+!.yarn
+!.yarn/**
+!.yarnrc.yml
+
+# Ne pas oublier le package.json et yarn.lock à la racine
+!package.json
+!yarn.lock
