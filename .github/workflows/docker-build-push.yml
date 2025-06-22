@@ -2,7 +2,8 @@ name: CI & Docker Publish
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   # -----------------------------
@@ -25,7 +26,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Deploy contracts on Hardhat network
-        run: npx hardhat run scripts/deploy.js --network hardhat
+        run: npx hardhat run hardhat/scripts/runHardhatDeployWithPK.ts --network hardhat
 
       - name: Run Hardhat tests
         run: npx hardhat test --network hardhat
@@ -60,6 +61,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .               # ou ./packages/react-app si tu ne containerises que le front
+          context: .
           push: true
-          tags: ton_dockerhub_user/crypto-scaffold:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/crypto-scaffold:latest
