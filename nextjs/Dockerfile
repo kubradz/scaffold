@@ -1,38 +1,33 @@
-# --- 1) Installation des dépendances (Yarn Berry / v3) ---
-FROM node:18-alpine AS deps
+# 1) Builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 
-# On copie le manifest root et le dossier .yarn
+# 1.1 / Core du mono-repo
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 
-# On installe en mode prod
-RUN yarn install --immutable --production
+# 1.2 / Only Next.js workspace
+COPY nextjs/package.json nextjs/yarn.lock ./nextjs/
+RUN yarn install --immutable
 
-# --- 2) Build de l’app NextJS ---
-FROM deps AS builder
-WORKDIR /app/nextjs
+COPY nextjs ./nextjs
+RUN yarn workspace nextjs build
 
-# On copie tout le code NextJS
-COPY nextjs/ ./
-
-# On build
-RUN yarn build
-
-# --- 3) Image de production ---
+# 2) Runner
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+# 2.1 / Copy only what we need
+COPY --from=builder /app/.yarn ./.yarn
+COPY --from=builder /app/yarn.lock ./yarn.lock
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/nextjs/.next ./nextjs/.next
+COPY --from=builder /app/nextjs/public ./nextjs/public
+COPY --from=builder /app/nextjs/package.json ./nextjs/package.json
 
-# On récupère le résultat du build
-COPY --from=builder /app/nextjs/.next       ./.next
-COPY --from=builder /app/nextjs/public      ./public
-COPY --from=builder /app/nextjs/package.json ./package.json
+# 2.2 / Prod deps (si vous voulez, sinon elles sont déjà dans node_modules de builder)
+RUN yarn install --immutable --production
 
-# On récupère les node_modules déjà installés
-COPY --from=deps /app/node_modules ./node_modules
-
+WORKDIR /app/nextjs
 EXPOSE 3000
-
-CMD ["yarn","start"]
+CMD ["yarn", "start"]
