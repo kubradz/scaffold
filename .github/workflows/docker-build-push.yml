@@ -9,8 +9,9 @@ jobs:
   # 1) Compilation / tests / lint
   # -----------------------------
   ci:
-    name: CI Tests & Build
+    name: 🔍 CI Tests & Deploy
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,20 +24,29 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Run Hardhat & Next.js build/test
-        run: |
-          yarn chain && yarn deploy       # Hardhat node + déploiement
-          yarn next:lint --max-warnings=0 # ESLint
-          yarn next:check-types           # TypeScript
-          yarn hardhat:lint --max-warnings=0
+      - name: Deploy contracts on Hardhat network
+        run: npx hardhat run scripts/deploy.js --network hardhat
+
+      - name: Run Hardhat tests
+        run: npx hardhat test --network hardhat
+
+      - name: Lint Next.js
+        run: yarn next:lint --max-warnings=0
+
+      - name: Type-check Next.js
+        run: yarn next:check-types
+
+      - name: Lint Hardhat
+        run: yarn hardhat:lint --max-warnings=0
 
   # -----------------------------
   # 2) Build & push Docker image
   # -----------------------------
   docker:
-    name: Build & Push Docker Image
+    name: 🐳 Build & Push Docker Image
     needs: ci
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,6 +60,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .               # ou ./packages/react-app si tu containerises seulement le front
+          context: .               # ou ./packages/react-app si tu ne containerises que le front
           push: true
           tags: ton_dockerhub_user/crypto-scaffold:latest
